@@ -32,5 +32,30 @@ Packets, Connections, and Datagrams
        2. packet只知道下一条的位置，具体要达到目的地则需要更高层的抽象来处理
        3. 尽管这意味着更长的packet,但是这也意味着无需pre-connection的connectionless网络，省去了复杂的信令协议
    12. 其他相关的概念是消息边界(message boundaries)和record markers (记录标志) ![image-20250507182507617](./assets/image-20250507182507617.png)
-       1. 应用程序通过协议传输消息时，消息边界即两次写入操作之间的字节偏移量。保留消息边界的协议（如图左侧）会在接收端明确标识发送方的原始消息边界；而不保留边界的协议（如TCP等流式协议，如图右侧）则会忽略该信息，接收端无法感知原始消息划分。因此，若需维持消息边界，应用程序需自行实现边界标识机制
-       2. 当应用程序向网络发送多个数据块时，通信协议**可能保留也可能不保留**这些数据块的原始写入信息。大多数数据报协议会保留消息边界。
+       1. 应用程序通过协议传输消息时，消息边界即两次写入操作之间的字节偏移量。
+          1. 保留消息边界的协议（如图左侧）会在接收端明确标识发送方的原始消息边界；
+          2. 而不保留边界的协议（如TCP等流式协议，如图右侧）则会忽略该信息，接收端无法感知原始消息划分。因此，若需维持消息边界，应用程序需自行实现边界标识机制
+          3. 大多数数据报协议会保留消息边界。
+       2. 但在电路交换或虚电路（VC）网络中，发送方可能写入多个数据块，接收方却会将其合并为不同大小的数据块一次性读取——这类协议不保留消息边界。**若底层协议无法保留边界而应用又需要该特性时，应用程序必须自行实现边界标识机制。**
+
+The End-to-End Argument and Fate Sharing 
+
+1. 在设计操作系统或协议套件等大型系统时，常需决策特定功能应部署(be placed)在哪个层级。这一问题的核心指导原则是**端到端原则（end-to-end argument）**
+
+   1. The function in question : 当前讨论的功能
+
+   2. 所讨论的功能，唯有借助通信系统端点应用程序的协同参与，方能完整且正确地实现。
+
+      > The function in question can completely and correctly be implemented only with  the knowledge and help of the application standing at the end points of the com munication system. 
+
+   3. 因此，若要将该功能完全交由通信系统原生实现，实不可行。（尽管通信系统提供的部分实现有时可作为性能优化手段。）
+
+      > Therefore, providing that questioned function as a feature of  the communication itself is not possible. (Sometimes an incomplete version of the  function provided by the communication system may be useful as a performance  enhancement.
+
+   4. 简单来说，这个原则就是大系统的重要的功能不应当在低层级实现，尽管后者可以为功能实现减轻负担以及优化性能做出努力
+
+      1. ### Nuanced：源自拉丁语 *"nubes"*（云），隐喻色彩/明暗的渐变层次
+
+         ![image-20250507190049325](./assets/image-20250507190049325.png)
+
+         1. 
